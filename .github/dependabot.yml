@@ -1,9 +1,12 @@
 version: 2
 updates:
+    # A fix: prefix, so that a new runner version shows up in the changelog and a release.
     - package-ecosystem: docker
       directory: /
       schedule:
           interval: daily
+      commit-message:
+          prefix: fix
     - package-ecosystem: github-actions
       directory: /
       schedule:
