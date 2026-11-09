@@ -25,6 +25,10 @@ jobs:
               run: docker build -t runner:ci .
             - name: Check the added tools
               run: docker run --rm --entrypoint sh runner:ci -c 'gh --version && ldconfig -p | grep libatomic.so.1'
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+              if: github.event_name != 'pull_request'
+              with:
+                  node-version: 24
             # The tag follows the runner version in the FROM line.
             - name: Publish
               if: github.event_name != 'pull_request'
@@ -33,6 +37,4 @@ jobs:
               run: |
                   version=$(sed -n 's/^FROM .*actions-runner:\([0-9.]*\).*/\1/p' Dockerfile)
                   [ -n "$version" ]
-                  echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-                  docker tag runner:ci "ghcr.io/tada5hi/github-runner:$version"
-                  docker push "ghcr.io/tada5hi/github-runner:$version"
+                  npx --yes craneship@4.1.0 --no-gitTag --registryTag "$version"
