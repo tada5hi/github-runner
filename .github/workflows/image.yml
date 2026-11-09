@@ -1,0 +1,38 @@
+name: Image
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    image:
+        name: Build and publish
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  persist-credentials: false
+            - name: Build
+              run: docker build -t runner:ci .
+            - name: Check the added tools
+              run: docker run --rm --entrypoint sh runner:ci -c 'gh --version && ldconfig -p | grep libatomic.so.1'
+            # The tag follows the runner version in the FROM line.
+            - name: Publish
+              if: github.event_name != 'pull_request'
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+              run: |
+                  version=$(sed -n 's/^FROM .*actions-runner:\([0-9.]*\).*/\1/p' Dockerfile)
+                  [ -n "$version" ]
+                  echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+                  docker tag runner:ci "ghcr.io/tada5hi/runner:$version"
+                  docker push "ghcr.io/tada5hi/runner:$version"
