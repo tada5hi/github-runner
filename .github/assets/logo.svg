@@ -1,0 +1,26 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="gra-title">
+    <title id="gra-title">github-runner logo, concept A: the actions-runner base image as a wide slab, with two blocks, libatomic1 and the GitHub CLI, set on top of it</title>
+
+    <g transform="translate(0 -27)">
+        <!-- the base image: ghcr.io/actions/actions-runner -->
+        <path d="M128 104 L224 152 L128 200 L32 152 Z" fill="#94A3B8"/>
+        <path d="M32 152 L128 200 V226 L32 178 Z" fill="#64748B"/>
+        <path d="M128 200 L224 152 V178 L128 226 Z" fill="#475569"/>
+
+        <!-- addition 1: libatomic1. Drops in once; the static transform is the resting state. -->
+        <g transform="translate(0 0)">
+            <animateTransform attributeName="transform" type="translate" values="0 -44; 0 0" dur="0.9s" calcMode="spline" keyTimes="0;1" keySplines="0.3 0 0.2 1" repeatCount="1" fill="freeze"/>
+            <path d="M78 85 L120 106 L78 127 L36 106 Z" fill="#FBBF24"/>
+            <path d="M36 106 L78 127 V173 L36 152 Z" fill="#F59E0B"/>
+            <path d="M78 127 L120 106 V152 L78 173 Z" fill="#D97706"/>
+        </g>
+
+        <!-- addition 2: the GitHub CLI -->
+        <g transform="translate(0 0)">
+            <animateTransform attributeName="transform" type="translate" values="0 -44; 0 -44; 0 0" dur="1.5s" calcMode="spline" keyTimes="0;0.4;1" keySplines="0 0 1 1; 0.3 0 0.2 1" repeatCount="1" fill="freeze"/>
+            <path d="M178 85 L220 106 L178 127 L136 106 Z" fill="#2DD4BF"/>
+            <path d="M136 106 L178 127 V173 L136 152 Z" fill="#14B8A6"/>
+            <path d="M178 127 L220 106 V152 L178 173 Z" fill="#0D9488"/>
+        </g>
+    </g>
+</svg>
