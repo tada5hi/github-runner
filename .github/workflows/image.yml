@@ -11,12 +11,9 @@ permissions:
     contents: read
 
 jobs:
-    image:
-        name: Build and publish
+    build:
+        name: Build and check
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: write
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
@@ -25,33 +22,54 @@ jobs:
               run: docker build -t runner:ci .
             - name: Check the added tools
               run: docker run --rm --entrypoint sh runner:ci -c 'gh --version && ldconfig -p | grep libatomic.so.1'
-            # The image tag follows the runner version in the FROM line, not the release version.
-            - name: Resolve the image tag
-              id: version
-              if: github.event_name != 'pull_request'
-              run: |
-                  version=$(sed -n 's/^FROM .*actions-runner:\([0-9.]*\).*/\1/p' Dockerfile)
-                  [ -n "$version" ]
-                  echo "version=$version" >> "$GITHUB_OUTPUT"
-            - uses: tada5hi/craneship@fcdbb02c68b952fc6c6d16901dd9b31250d60e09 # v4
-              if: github.event_name != 'pull_request'
-              with:
-                  gitTag: 'false'
-                  registryRepository: tada5hi/github-runner
-                  registryTag: ${{ steps.version.outputs.version }}
 
     release:
         name: Prepare release
         if: github.event_name == 'push'
-        needs: [image]
+        needs: [build]
         runs-on: ubuntu-latest
         permissions:
             contents: write
             issues: write
             pull-requests: write
+        outputs:
+            release_created: ${{ steps.release.outputs.release_created }}
         steps:
             - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
+              id: release
               with:
                   token: ${{ github.token }}
                   config-file: release-please-config.json
                   manifest-file: .release-please-manifest.json
+
+    # Only for a new release; workflow_dispatch publishes the selected ref again.
+    publish:
+        name: Publish image
+        needs: [build, release]
+        if: >-
+            always() && !cancelled() && needs.build.result == 'success' &&
+            (needs.release.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  persist-credentials: false
+            # The image tag follows the runner version in the FROM line, not the release version.
+            - name: Resolve the image tag
+              id: version
+              run: |
+                  version=$(sed -n 's/^FROM .*actions-runner:\([0-9.]*\).*/\1/p' Dockerfile)
+                  [ -n "$version" ]
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+            - uses: tada5hi/craneship@fcdbb02c68b952fc6c6d16901dd9b31250d60e09 # v4
+              with:
+                  gitTag: 'false'
+                  registryRepository: tada5hi/github-runner
+                  registryTag: ${{ steps.version.outputs.version }}
+            - name: Check the published image
+              env:
+                  VERSION: ${{ steps.version.outputs.version }}
+              run: docker run --rm --pull always --entrypoint sh "ghcr.io/tada5hi/github-runner:$VERSION" -c 'gh --version && ldconfig -p | grep libatomic.so.1'
