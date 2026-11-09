@@ -1,7 +1,7 @@
 # The actions-runner image plus what CI on the nebula runners needs: libatomic1 (Node 26) and the GitHub CLI.
 FROM ghcr.io/actions/actions-runner:2.338.2
 
-LABEL org.opencontainers.image.source="https://github.com/tada5hi/runner-image"
+LABEL org.opencontainers.image.source="https://github.com/tada5hi/github-runner"
 
 ARG GH_VERSION=2.103.3
 ARG GH_SHA256=4c806978ffce1cec70853302a56d70ac6da4f19bae7adca4e1a8ab00633dd91d
