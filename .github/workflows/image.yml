@@ -34,5 +34,5 @@ jobs:
                   version=$(sed -n 's/^FROM .*actions-runner:\([0-9.]*\).*/\1/p' Dockerfile)
                   [ -n "$version" ]
                   echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-                  docker tag runner:ci "ghcr.io/tada5hi/runner:$version"
-                  docker push "ghcr.io/tada5hi/runner:$version"
+                  docker tag runner:ci "ghcr.io/tada5hi/github-runner:$version"
+                  docker push "ghcr.io/tada5hi/github-runner:$version"
